@@ -1,6 +1,6 @@
 # ---- Loading Necessary Packages ----
 library(dplyr) # For Data Manipulation
-library(ggplot2) # For Data Representation and Visualiazation
+library(ggplot2) # For Data Representation and Visualization
 library(vioplot) # Data visualization through violin plot
 
 # ---- Importing German_Credit_Risk Dataset ----
@@ -204,38 +204,42 @@ print(plot_job_bar)
 # ---- Bivariate Analysis ----
 # 1. Group Data
 
-# Groups data by Sex and computes the mean Age,
-# mean Credit Amount, and total count per group.
+# Groups data by Sex
+# computes mean, median, mode Credit Amount, and total count per group.
 # This shows how credit behavior differs between male and female applicants.
 group_sex <- GRC_Data %>%
   group_by(Sex) %>%
   summarise(
-    Mean_Age    = mean(Age,           na.rm = TRUE),
-    Mean_Credit = mean(Credit_amount, na.rm = TRUE),
-    Count       = n()
+    Mean_Credit   = mean(Credit_amount, na.rm = TRUE),
+    Median_Credit = median(Credit_amount, na.rm = TRUE),
+    Mode_Credit   = get_mode(Credit_amount),
+    Mean_Age      = mean(Age, na.rm = TRUE),
+    Count         = n()
   )
-group_sex
 
-# Groups data by Housing status and computes the mean Age,
-# mean Credit Amount, and total count per group.
+# Groups data by Housing status
+# mean, median, mode Credit Amount, and total count per group.
 # This shows how housing type relates to credit amount requested.
 group_housing <- GRC_Data %>%
   group_by(Housing) %>%
   summarise(
-    Mean_Age    = mean(Age,           na.rm = TRUE),
-    Mean_Credit = mean(Credit_amount, na.rm = TRUE),
-    Count       = n()
+    Mean_Credit   = mean(Credit_amount, na.rm = TRUE),
+    Median_Credit = median(Credit_amount, na.rm = TRUE),
+    Mode_Credit   = get_mode(Credit_amount),
+    Mean_Age      = mean(Age, na.rm = TRUE),
+    Count         = n()
   )
-group_housing
 
-# Groups data by Risk (good/bad) and computes the mean Credit Amount,
-# mean Duration, and total count per group.
+# Groups data by Risk (good/bad) and computes the mean, median,
+# mode Credit Amount, mean Duration, and total count per group.
 # This reveals how loan size and duration differ between
 # good and bad credit risk applicants.
 group_risk <- GRC_Data %>%
   group_by(Risk) %>%
   summarise(
     Mean_Credit   = mean(Credit_amount, na.rm = TRUE),
+    Median_Credit = median(Credit_amount, na.rm = TRUE),
+    Mode_Credit   = get_mode(Credit_amount),
     Mean_Duration = mean(Duration,      na.rm = TRUE),
     Count         = n()
   )
@@ -249,117 +253,67 @@ group_purpose <- GRC_Data %>%
   group_by(Purpose) %>%
   summarise(
     Mean_Credit   = mean(Credit_amount, na.rm = TRUE),
-    Mean_Duration = mean(Duration,      na.rm = TRUE),
+    Median_Credit = median(Credit_amount, na.rm = TRUE),
+    Mode_Credit   = get_mode(Credit_amount),
+    Mean_Duration = mean(Duration, na.rm = TRUE),
     Count         = n()
   )
-group_purpose
 
-# Age vs Saving_accounts (Correlation)
-# Convert Saving_accounts to numeric for correlation
-GRC_Data$Saving_accounts_num <- as.numeric(factor(GRC_Data$Saving_accounts,
-                                          levels = c("little", "moderate", 
-                                                     "quite rich", "rich")))
 
-cor_age_saving <- cor.test(GRC_Data$Age, GRC_Data$Saving_accounts_num,
-                           method = "spearman", use = "complete.obs")
-cat("=== Age vs Saving Accounts (Spearman Correlation) ===\n")
-
-# Credit_amount vs Job (Kruskal-Wallis Test)
-kw_credit_job <- kruskal.test(Credit_amount ~ factor(Job), data = GRC_Data)
-cat("=== Credit Amount vs Job (Kruskal-Wallis Test) ===\n")
-print(kw_credit_job)
-print(cor_age_saving)
-
-#Duration vs Sex (T-Test)
-ttest_duration_sex <- t.test(Duration ~ Sex, data = GRC_Data)
-cat("=== Duration vs Sex (Independent T-Test) ===\n")
-print(ttest_duration_sex)
-
-#Housing vs checking account (Chi-square)
-chisq_risk_checking <- chisq.test(table(GRC_Data$Risk,
-                                        GRC_Data$Checking_account))
-cat("=== Risk vs Checking Account (Chi-Square Test) ===\n")
-print(chisq_risk_checking)
 
 # 2. Tabulate Results
 # Combines all four bivariate group summaries into
 # individual data frames for clean, readable output.
 
 bivariate_table_sex <- data.frame(
-  Sex         = group_sex$Sex,
-  Mean_Age    = group_sex$Mean_Age,
-  Mean_Credit = group_sex$Mean_Credit,
-  Count       = group_sex$Count
+  Sex           = group_sex$Sex,
+  Mean_Age      = round(group_sex$Mean_Age, 2),
+  Mean_Credit   = round(group_sex$Mean_Credit, 2),
+  Median_Credit = group_sex$Median_Credit,
+  Mode_Credit   = group_sex$Mode_Credit,
+  Count         = group_sex$Count
 )
 print(bivariate_table_sex)
 
 bivariate_table_housing <- data.frame(
-  Housing     = group_housing$Housing,
-  Mean_Age    = group_housing$Mean_Age,
-  Mean_Credit = group_housing$Mean_Credit,
-  Count       = group_housing$Count
+  Housing       = group_housing$Housing,
+  Mean_Age      = round(group_housing$Mean_Age, 2),
+  Mean_Credit   = round(group_housing$Mean_Credit, 2),
+  Median_Credit = group_housing$Median_Credit,
+  Mode_Credit   = group_housing$Mode_Credit,
+  Count         = group_housing$Count
 )
 print(bivariate_table_housing)
 
 bivariate_table_risk <- data.frame(
   Risk          = group_risk$Risk,
-  Mean_Credit   = group_risk$Mean_Credit,
-  Mean_Duration = group_risk$Mean_Duration,
+  Mean_Credit   = round(group_risk$Mean_Credit, 2),
+  Median_Credit = group_risk$Median_Credit,
+  Mode_Credit   = group_risk$Mode_Credit,
+  Mean_Duration = round(group_risk$Mean_Duration, 2),
   Count         = group_risk$Count
 )
 print(bivariate_table_risk)
 
 bivariate_table_purpose <- data.frame(
   Purpose       = group_purpose$Purpose,
-  Mean_Credit   = group_purpose$Mean_Credit,
-  Mean_Duration = group_purpose$Mean_Duration,
+  Mean_Credit   = round(group_purpose$Mean_Credit, 2),
+  Median_Credit = group_purpose$Median_Credit,
+  Mode_Credit   = group_purpose$Mode_Credit,
+  Mean_Duration = round(group_purpose$Mean_Duration, 2),
   Count         = group_purpose$Count
 )
 print(bivariate_table_purpose)
 
-#Age vs Saving_accounts
-table_age_saving <- GRC_Data %>%
-  filter(!is.na(Saving_accounts)) %>%
-  group_by(Saving_accounts) %>%
-  summarise(Mean_Age = mean(Age, na.rm = TRUE), Count = n()) %>%
-  mutate(Saving_accounts = factor(Saving_accounts,
-                                  levels = c("little", "moderate",
-                                             "quite rich", "rich"))) %>%
-  arrange(Saving_accounts)
-print(table_age_saving)
 
-# Median Credit_amount vs Job
-table_credit_job <- GRC_Data %>%
-  group_by(Job) %>%
-  summarise(Median_Credit = median(Credit_amount, na.rm = TRUE), Count = n())
-print(table_credit_job)
-
-#Duration vs Sex
-table_duration_sex <- GRC_Data %>%
-  group_by(Sex) %>%
-  summarise(
-    Mean_Duration   = mean(Duration,   na.rm = TRUE),
-    Median_Duration = median(Duration, na.rm = TRUE),
-    SD_Duration     = sd(Duration,     na.rm = TRUE),
-    Min_Duration    = min(Duration,    na.rm = TRUE),
-    Max_Duration    = max(Duration,    na.rm = TRUE),
-    Count           = n()
-  )
-print(table_duration_sex)
-
-#Risk vs Chekcing account
-table_risk_checking <- GRC_Data %>%
-  filter(!is.na(Checking_account)) %>%
-  group_by(Risk, Checking_account) %>%
-  summarise(Count = n(), .groups = "drop") %>%
-  mutate(Checking_account = factor(Checking_account,
-                                   levels = c("little", "moderate", "quite rich", "rich")))
 
 
 # ---- Data Visualization with Base Graphics ----
 
 # Set up a 2x2 grid to display all four bivariate bar charts together
 par(mfrow = c(2, 2))
+
+#Mean
 
 # Bar chart of Mean Credit Amount by Sex
 # Compares the average loan size requested by male vs female applicants.
@@ -414,61 +368,111 @@ barplot(
   cex.names = 0.7  # shrinks label text slightly to fit all purpose names
 )
 
-#Bar plot of Age vs Saving accounts
-#Reveals the correation of Age and their savings account in base graphics 
+
+#Median
+# Bar chart of Median Credit Amount by Sex
 barplot(
-  table_age_saving$Mean_Age,
-  names.arg = table_age_saving$Saving_accounts,
-  main      = "Mean Age by Saving Account Level",
-  xlab      = "Saving Account Level",
-  ylab      = "Mean Age (years)",
-  col       = c("steelblue", "goldenrod", "mediumseagreen", "tomato"),
+  bivariate_table_sex$Median_Credit,
+  names.arg = bivariate_table_sex$Sex,
+  main      = "Median Credit Amount by Sex",
+  xlab      = "Sex",
+  ylab      = "Median Credit Amount (DM)",
+  col       = c("steelblue", "tomato"),
+  border    = "white"
+)
+  
+# Bar chart of Median Credit Amount by Housing Status
+barplot(
+  bivariate_table_housing$Median_Credit,
+  names.arg = bivariate_table_housing$Housing,
+  main      = "Median Credit Amount by Housing",
+  xlab      = "Housing Status",
+  ylab      = "Median Credit Amount (DM)",
+  col       = c("mediumseagreen", "goldenrod", "orchid"),
   border    = "white"
 )
 
-#Boxplot of Credit amount vs Job
-#Displays an upward trend to the Job skill level, and the amount of loan they get
-boxplot(
-  Credit_amount ~ Job,
-  data   = GRC_Data,
-  main   = "Credit Amount by Job Category",
-  xlab   = "Job Category (0 = Unskilled, 3 = Highly Skilled)",
-  ylab   = "Credit Amount (DM)",
-  col    = c("orchid", "goldenrod", "cornflowerblue", "salmon"),
-  border = "gray30"
-)
-
-#Vioplot of Duration vs Sex
-#displays the diffrence of loan duration between male and female
-library(vioplot)
-vioplot(
-  Duration ~ Sex,
-  data   = GRC_Data,
-  main   = "Loan Duration by Sex",
-  xlab   = "Sex",
-  ylab   = "Duration (months)",
-  col    = c("tomato", "steelblue")
-)
-
-#Stacked bar chart of Risk vs Checking account
-risk_checking_matrix <- table(GRC_Data$Risk, GRC_Data$Checking_account)
+# Bar chart of Median Credit Amount by Risk
 barplot(
-  risk_checking_matrix,
-  main   = "Risk by Checking Account Level",
-  xlab   = "Checking Account Level",
-  ylab   = "Count",
-  col    = c("firebrick", "cornflowerblue"),
-  legend = rownames(risk_checking_matrix),
-  beside = FALSE,
-  border = "white"
+  bivariate_table_risk$Median_Credit,
+  names.arg = bivariate_table_risk$Risk,
+  main      = "Median Credit Amount by Risk",
+  xlab      = "Credit Risk",
+  ylab      = "Median Credit Amount (DM)",
+  col       = c("firebrick", "cornflowerblue"),
+  border    = "white"
+)
+
+# Bar chart of Median Credit Amount by Loan Purpose
+barplot(
+  bivariate_table_purpose$Median_Credit,
+  names.arg = bivariate_table_purpose$Purpose,
+  main      = "Median Credit Amount by Purpose",
+  xlab      = "Loan Purpose",
+  ylab      = "Median Credit Amount (DM)",
+  col       = "salmon",
+  border    = "white",
+  las       = 2,
+  cex.names = 0.7
+)
+
+
+
+#Mode
+# Bar chart of Mode Credit Amount by Sex
+barplot(
+  bivariate_table_sex$Mode_Credit,
+  names.arg = bivariate_table_sex$Sex,
+  main      = "Mode Credit Amount by Sex",
+  xlab      = "Sex",
+  ylab      = "Mode Credit Amount (DM)",
+  col       = c("steelblue", "tomato"),
+  border    = "white"
+)
+
+# Bar chart of Mode Credit Amount by Housing Status
+barplot(
+  bivariate_table_housing$Mode_Credit,
+  names.arg = bivariate_table_housing$Housing,
+  main      = "Mode Credit Amount by Housing",
+  xlab      = "Housing Status",
+  ylab      = "Mode Credit Amount (DM)",
+  col       = c("mediumseagreen", "goldenrod", "orchid"),
+  border    = "white"
+)
+
+# Bar chart of Mode Credit Amount by Risk
+barplot(
+  bivariate_table_risk$Mode_Credit,
+  names.arg = bivariate_table_risk$Risk,
+  main      = "Mode Credit Amount by Risk",
+  xlab      = "Credit Risk",
+  ylab      = "Mode Credit Amount (DM)",
+  col       = c("firebrick", "cornflowerblue"),
+  border    = "white"
+)
+
+# Bar chart of Mode Credit Amount by Loan Purpose
+barplot(
+  bivariate_table_purpose$Mode_Credit,
+  names.arg = bivariate_table_purpose$Purpose,
+  main      = "Mode Credit Amount by Purpose",
+  xlab      = "Loan Purpose",
+  ylab      = "Mode Credit Amount (DM)",
+  col       = "salmon",
+  border    = "white",
+  las       = 2,
+  cex.names = 0.7
 )
 
 # Reset plotting layout back to a single panel after the four charts
 par(mfrow = c(1, 1))
 
 
+
 # ---- Data Visualization with ggplot2 ----
 
+#Mean
 # Bar chart of Mean Credit Amount by Sex
 # Compares average loan size between male and female applicants
 # using labelled bars for easy reading.
@@ -557,92 +561,143 @@ plot_biv_purpose <- ggplot(bivariate_table_purpose,
 
 print(plot_biv_purpose)
 
-#Bar chart of Age vs Saving accounts
-#Reveals the correation of Age and their savings account 
-#Spearman shows weak positive correlation between age,
-#and their Savings account level
-plot_age_saving <- ggplot(table_age_saving,
-                          aes(x = Saving_accounts, y = Mean_Age,
-                              fill = Saving_accounts)) +
+
+
+#Median
+# Median Credit Amount by Sex
+plot_med_sex <- ggplot(bivariate_table_sex,
+                       aes(x = Sex, y = Median_Credit, fill = Sex)) +
   geom_bar(stat = "identity", color = "white", width = 0.5) +
-  geom_text(aes(label = round(Mean_Age, 1)), vjust = -0.5, size = 4) +
-  scale_fill_manual(values = c("little"     = "steelblue",
-                               "moderate"   = "goldenrod",
-                               "quite rich" = "mediumseagreen",
-                               "rich"       = "tomato")) +
-  labs(
-    title    = "Mean Age by Saving Account Level",
-    subtitle = paste("Spearman r =", round(cor_age_saving$estimate, 3),
-                     "| p-value =", round(cor_age_saving$p.value, 4)),
-    x        = "Saving Account Level",
-    y        = "Mean Age (years)"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(legend.position = "none")
-
-print(plot_age_saving)
-
-#boxplot of Credit amount vs Job
-#Displays a clear upward trend on job skill level to the credit amount
-#The more skilled the individual, the more likely they are to loan more
-plot_credit_job <- ggplot(GRC_Data, aes(x = factor(Job), y = Credit_amount,
-                                        fill = factor(Job))) +
-  geom_boxplot(color = "gray30", outlier.color = "firebrick",
-               outlier.shape = 16) +
-  scale_fill_manual(values = c("0" = "orchid3", "1" = "goldenrod2",
-                               "2" = "cornflowerblue", "3" = "salmon3")) +
-  scale_x_discrete(labels = c("0\nUnskilled\n(non-resident)",
-                              "1\nUnskilled\n(resident)",
-                              "2\nSkilled",
-                              "3\nHighly\nSkilled")) +
-  labs(
-    title    = "Credit Amount by Job Category (Kruskal-Wallis)",
-    subtitle = paste("Chi-squared =", round(kw_credit_job$statistic, 3),
-                     "| p-value =", round(kw_credit_job$p.value, 4)),
-    x        = "Job Category",
-    y        = "Credit Amount (DM)"
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(legend.position = "none")
-
-print(plot_credit_job)
-
-#Violin plot of Duration vs Sex
-#displays the diffrence of loan duration between male and female
-#Shows that loan duration among female are shorter than male's since the
-#plotting in short loans are wider in female than male
-plot_duration_sex <- ggplot(GRC_Data, aes(x = Sex, y = Duration, fill = Sex)) +
-  geom_violin(color = "gray30", alpha = 0.7) +
-  geom_boxplot(width = 0.1, fill = "white", color = "gray30",
-               outlier.color = "firebrick", outlier.shape = 16) +
+  geom_text(aes(label = Median_Credit), vjust = -0.5, size = 4) +
   scale_fill_manual(values = c("female" = "tomato", "male" = "steelblue")) +
   labs(
-    title    = "Loan Duration by Sex (T-Test)",
-    subtitle = paste("t =", round(ttest_duration_sex$statistic, 3),
-                     "| p-value =", round(ttest_duration_sex$p.value, 4)),
+    title    = "Median Credit Amount by Sex",
+    subtitle = "German Credit Risk Dataset",
     x        = "Sex",
-    y        = "Duration (months)"
+    y        = "Median Credit Amount (DM)"
   ) +
   theme_minimal(base_size = 13) +
   theme(legend.position = "none")
+print(plot_med_sex)
 
-print(plot_duration_sex)
+# Median Credit Amount by Housing Status
+plot_med_housing <- ggplot(bivariate_table_housing,
+                           aes(x = Housing, y = Median_Credit, fill = Housing)) +
+  geom_bar(stat = "identity", color = "white", width = 0.5) +
+  geom_text(aes(label = Median_Credit), vjust = -0.5, size = 4) +
+  scale_fill_manual(values = c("free" = "mediumseagreen",
+                               "own"  = "goldenrod",
+                               "rent" = "orchid3")) +
+  labs(
+    title    = "Median Credit Amount by Housing Status",
+    subtitle = "German Credit Risk Dataset",
+    x        = "Housing Status",
+    y        = "Median Credit Amount (DM)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "none")
+print(plot_med_housing)
 
-#Stacked bar chart of Risk vs Checking account
-#Shows that credit risk significantly difers accorss checking account levels
-#with NA having an overwhelming good risk
-plot_risk_checking <- ggplot(table_risk_checking,
-                             aes(x = Checking_account, y = Count, fill = Risk)) +
-  geom_bar(stat = "identity", color = "white") +
+# Median Credit Amount by Risk
+plot_med_risk <- ggplot(bivariate_table_risk,
+                        aes(x = Risk, y = Median_Credit, fill = Risk)) +
+  geom_bar(stat = "identity", color = "white", width = 0.5) +
+  geom_text(aes(label = Median_Credit), vjust = -0.5, size = 4) +
   scale_fill_manual(values = c("bad" = "firebrick", "good" = "cornflowerblue")) +
   labs(
-    title    = "Risk Distribution by Checking Account Level (Chi-Square)",
-    subtitle = paste("Chi-squared =", round(chisq_risk_checking$statistic, 3),
-                     "| p-value =", round(chisq_risk_checking$p.value, 4)),
-    x        = "Checking Account Level",
-    y        = "Count",
-    fill     = "Credit Risk"
+    title    = "Median Credit Amount by Risk",
+    subtitle = "German Credit Risk Dataset",
+    x        = "Credit Risk",
+    y        = "Median Credit Amount (DM)"
   ) +
-  theme_minimal(base_size = 13)
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "none")
+print(plot_med_risk)
 
-print(plot_risk_checking)
+# Median Credit Amount by Loan Purpose
+plot_med_purpose <- ggplot(bivariate_table_purpose,
+                           aes(x = reorder(Purpose, -Median_Credit),
+                               y = Median_Credit,
+                               fill = Purpose)) +
+  geom_bar(stat = "identity", color = "white") +
+  geom_text(aes(label = Median_Credit), vjust = -0.5, size = 3.2) +
+  labs(
+    title    = "Median Credit Amount by Loan Purpose",
+    subtitle = "Sorted from highest to lowest median loan",
+    x        = "Loan Purpose",
+    y        = "Median Credit Amount (DM)"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 30, hjust = 1))
+print(plot_med_purpose)
+
+
+#Mode
+# Mode Credit Amount by Sex
+plot_mode_sex <- ggplot(bivariate_table_sex,
+                        aes(x = Sex, y = Mode_Credit, fill = Sex)) +
+  geom_bar(stat = "identity", color = "white", width = 0.5) +
+  geom_text(aes(label = Mode_Credit), vjust = -0.5, size = 4) +
+  scale_fill_manual(values = c("female" = "tomato", "male" = "steelblue")) +
+  labs(
+    title    = "Mode Credit Amount by Sex",
+    subtitle = "German Credit Risk Dataset",
+    x        = "Sex",
+    y        = "Mode Credit Amount (DM)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "none")
+print(plot_mode_sex)
+
+# Mode Credit Amount by Housing Status
+plot_mode_housing <- ggplot(bivariate_table_housing,
+                            aes(x = Housing, y = Mode_Credit, fill = Housing)) +
+  geom_bar(stat = "identity", color = "white", width = 0.5) +
+  geom_text(aes(label = Mode_Credit), vjust = -0.5, size = 4) +
+  scale_fill_manual(values = c("free" = "mediumseagreen",
+                               "own"  = "goldenrod",
+                               "rent" = "orchid3")) +
+  labs(
+    title    = "Mode Credit Amount by Housing Status",
+    subtitle = "German Credit Risk Dataset",
+    x        = "Housing Status",
+    y        = "Mode Credit Amount (DM)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "none")
+print(plot_mode_housing)
+
+# Mode Credit Amount by Risk
+plot_mode_risk <- ggplot(bivariate_table_risk,
+                         aes(x = Risk, y = Mode_Credit, fill = Risk)) +
+  geom_bar(stat = "identity", color = "white", width = 0.5) +
+  geom_text(aes(label = Mode_Credit), vjust = -0.5, size = 4) +
+  scale_fill_manual(values = c("bad" = "firebrick", "good" = "cornflowerblue")) +
+  labs(
+    title    = "Mode Credit Amount by Risk",
+    subtitle = "German Credit Risk Dataset",
+    x        = "Credit Risk",
+    y        = "Mode Credit Amount (DM)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "none")
+print(plot_mode_risk)
+
+# Mode Credit Amount by Loan Purpose
+plot_mode_purpose <- ggplot(bivariate_table_purpose,
+                            aes(x = reorder(Purpose, -Mode_Credit),
+                                y = Mode_Credit,
+                                fill = Purpose)) +
+  geom_bar(stat = "identity", color = "white") +
+  geom_text(aes(label = Mode_Credit), vjust = -0.5, size = 3.2) +
+  labs(
+    title    = "Mode Credit Amount by Loan Purpose",
+    subtitle = "Sorted from highest to lowest modal loan",
+    x        = "Loan Purpose",
+    y        = "Mode Credit Amount (DM)"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 30, hjust = 1))
+print(plot_mode_purpose)
